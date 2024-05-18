@@ -221,55 +221,10 @@ class Request
                 $max = (int)$max[1];
             }
             // Validate string length against min and max constraints (assuming $this->post[$key] is a string)
-            $stringLength = strlen($this->post[$key]);/**
-* 
-                                                       *
- * @phpstan-ignore-line 
-*/
-            
+            $stringLength = strlen($this->post[$key]);
+            /**@phpstan-ignore-line*/
             if (!($min <= $stringLength && $stringLength <= $max)) {
                 $this->error = "String length for post '$key' is ({$stringLength}) . it is outside the range ({$min}-{$max})";
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * @param  array<string> $postKeys Key-value pairs where key is the POST data key and value is the corresponding object property
-     * @param  object        $class    The object to populate with POST data
-     * @return bool True on success, false on failure with an error message set in `$this->error`
-     */
-    public function mapPostToObjectxxx(array $postKeys, object $class): bool
-    {
-        foreach ($postKeys as $postKey => $classProperty) {
-            if (!isset($this->post[$postKey])) {
-                $this->error = "POST key '$postKey' is not found in request";
-                return false;
-            }
-
-            if (!property_exists($class, $classProperty)) {
-                $this->error = "Target Class has no '$classProperty' as property";
-                return false;
-            }
-
-            $propertyValue = $this->post[$postKey];
-
-            // Validate property type
-            $isValidType = $this->validatePropertyType($classProperty, $propertyValue);
-            if (!$isValidType) {
-                $this->error = "Invalid value type for property '$classProperty'";
-                return false;
-            }
-
-            // Convert value to target type if needed
-            $convertedValue = $this->convertToTargetType($propertyValue, $classProperty);
-
-            try {
-                $class->$classProperty = $convertedValue;
-            } catch (\Exception $e) {
-                $this->error = "Error setting property '$classProperty': " . $e->getMessage();
                 return false;
             }
         }
