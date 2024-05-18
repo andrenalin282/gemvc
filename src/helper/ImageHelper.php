@@ -21,7 +21,7 @@ class ImageHelper extends FileHelper
      */
     public function toJPEG(?int $width = null, ?int $height = null): bool
     {
-        $phpImage = $this->toPhphImageObject($width, $height);
+        $phpImage = $this->toPhpImageObject($width, $height);
         if ($phpImage) {
             if (imagejpeg($phpImage, $this->outputFile, 100)) {
                 imagedestroy($phpImage);
@@ -39,7 +39,7 @@ class ImageHelper extends FileHelper
      */
     public function ToPNG(int $width = null, int $height = null): bool
     {
-        $phpImage = $this->toPhphImageObject($width, $height);
+        $phpImage = $this->toPhpImageObject($width, $height);
         if ($phpImage) {
             if (imagepng($phpImage, $this->outputFile, 100)) {
                 imagedestroy($phpImage);
@@ -85,7 +85,7 @@ class ImageHelper extends FileHelper
     }
 
 
-    protected function toPhphImageObject(int $width = null, int $height = null): GdImage|false
+    protected function toPhpImageObject(int $width = null, int $height = null): GdImage|false
     {
         if ($this->error) {
             return false;
@@ -97,7 +97,7 @@ class ImageHelper extends FileHelper
         }
         $image = imagecreatefromstring($result);
         if (!$image) {
-            $this->error = "Given file could not be converted to PhphImage";
+            $this->error = "Given file could not be converted to PhpImage";
             return false;
         }
         if ($width or $height) {

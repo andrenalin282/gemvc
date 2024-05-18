@@ -205,7 +205,7 @@ class ApacheRequest
                 return 'invalid_remote_address_ip_format';
             }
         }
-        return 'unsetted_remote_address';
+        return 'remote_address is not set';
     }
 
     private function getRequestMethod():string

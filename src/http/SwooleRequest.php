@@ -8,7 +8,7 @@ use GemLibrary\Http\Request;
 class SwooleRequest
 {
     public   Request $request; 
-    private  object  $incommingRequestObject;
+    private  object  $incomingRequestObject;
        
     /**
      * @param object $swooleRquest
@@ -16,7 +16,7 @@ class SwooleRequest
     public function __construct(object $swooleRquest)
     {
         $this->request = new Request();
-        $this->incommingRequestObject = $swooleRquest;
+        $this->incomingRequestObject = $swooleRquest;
         if(isset($swooleRquest->server['request_uri'])) {
             $this->request->requestMethod = $swooleRquest->server['request_method'];
             $this->request->requestedUrl = $swooleRquest->server['request_uri'];
@@ -35,7 +35,7 @@ class SwooleRequest
 
     public function getOriginalSwooleRequest():object
     {
-        return $this->incommingRequestObject;
+        return $this->incomingRequestObject;
     }
 
     private function setData():void
@@ -49,30 +49,30 @@ class SwooleRequest
 
     private function setPost():void
     {
-        if(isset($this->incommingRequestObject->post)) {
-            $this->request->post = $this->incommingRequestObject->post;
+        if(isset($this->incomingRequestObject->post)) {
+            $this->request->post = $this->incomingRequestObject->post;
         }
     }
 
 
     private function setAuthorizationToken():void
     {
-        if(isset($this->incommingRequestObject->header['authorization'])) {
-            $this->request->authorizationHeader = $this->incommingRequestObject->header['authorization'];
+        if(isset($this->incomingRequestObject->header['authorization'])) {
+            $this->request->authorizationHeader = $this->incomingRequestObject->header['authorization'];
         }
     }
 
     private function setFiles():void
     {
-        if(isset($this->incommingRequestObject->files)) {
-            $this->request->files = $this->incommingRequestObject->files;
+        if(isset($this->incomingRequestObject->files)) {
+            $this->request->files = $this->incomingRequestObject->files;
         }
     }
 
     private function setGet():void
     {
-        if(isset($this->incommingRequestObject->get)) {
-            $this->request->get = $this->incommingRequestObject->get;
+        if(isset($this->incomingRequestObject->get)) {
+            $this->request->get = $this->incomingRequestObject->get;
         }
     }
 }

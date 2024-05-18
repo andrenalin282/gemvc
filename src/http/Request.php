@@ -220,9 +220,8 @@ class Request
             } else {
                 $max = (int)$max[1];
             }
-            // Validate string length against min and max constraints (assuming $this->post[$key] is a string)
+            /**@phpstan-ignore-next-line */
             $stringLength = strlen($this->post[$key]);
-            /**@phpstan-ignore-line*/
             if (!($min <= $stringLength && $stringLength <= $max)) {
                 $this->error = "String length for post '$key' is ({$stringLength}) . it is outside the range ({$min}-{$max})";
                 return false;
@@ -298,88 +297,9 @@ class Request
             'email'
         ];
         if (!in_array($validationString, $validation)) {
-            $this->error = "unvalid type of validation for $validationString";
+            $this->error = "invalid type of validation for $validationString";
             return false;
         }
         return true;
-    }
-
-    /**
-     * Validates if a value matches the expected type for a property.
-     *
-     * @param  string|null $propertyType The expected type of the property (e.g., "string", "int", "MyClass")
-     * @param  mixed       $value        The value to validate
-     * @return bool True if the value matches the property type, false otherwise
-     */
-    private function validatePropertyType(?string $propertyType, mixed $value): bool
-    {
-        if ($propertyType === null) {
-            // Allow any type if property type is not specified
-            return true;
-        }
-
-        switch ($propertyType) {
-        case 'string':
-            return is_string($value);
-        case 'int':
-            return is_numeric($value) && is_int($value); // Ensure integer type
-        case 'float':
-            return is_float($value);
-        case 'bool':
-            return is_bool($value);
-        case 'array':
-            return is_array($value);
-        default:
-            $this->error = "unsupported type";
-            return false;
-        }
-    }
-
-    /**
-     * Attempts to convert a value to the target type, if possible.
-     *
-     * @param  mixed $value The value to convert
-     * @return mixed The converted value or the original value if conversion is not possible
-     * @throws \InvalidArgumentException If conversion fails due to incompatible types
-     */
-    private function convertToTargetType(mixed $value, string|null $targetType): mixed
-    {
-
-        if (is_null($targetType)) {
-            // Allow any type if no target type specified
-            return $value;
-        }
-
-        switch ($targetType) {
-        case 'int':
-            if (is_numeric($value)) {
-                return (int) $value; // Convert to integer
-            }
-            break;
-        case 'float':
-            if (is_numeric($value)) {
-                return (float) $value; // Convert to float
-            }
-            break;
-        case 'bool':
-            if (is_string($value) && in_array(strtolower($value), ['true', 'false', '1', '0'])) {
-                return (bool) $value; // Convert to boolean
-            }
-            break;
-        case 'string':
-            // String is the default type, no conversion needed
-            return  $value;
-        default:
-            // Handle custom object types (optional)
-            if (class_exists($targetType)) {
-                // Implement logic to convert to the custom object type (if possible)
-                // You might need additional libraries or custom conversion functions here
-                $this->error = "Conversion to object type '$targetType' not supported";
-            } else {
-                $this->error = "Unsupported target type: '$targetType'";
-            }
-        }
-
-        throw new \InvalidArgumentException("Could not convert value to target type: '$targetType'");
     }
 }
