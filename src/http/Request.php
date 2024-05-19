@@ -92,11 +92,10 @@ class Request
      * @return bool
      * validatePosts(['email'=>'email' , 'id'=>'int' , '?name' => 'string'])
      * @help   : ?name means it is optional
-     * @in     case of false $this->error will be setted
+     * @in     case of false $this->error will be set
      */
     public function definePostSchema(array $toValidatePost): bool
     {
-        //TODO: brake this function into smaller functions
         $errors = []; // Initialize an empty array to store errors
         $requires = [];
         $optionals = [];
@@ -125,7 +124,7 @@ class Request
             return false;
         }
 
-        foreach($requires as $validation_key => $validation_value) {      //now only check existance of requires post 
+        foreach($requires as $validation_key => $validation_value) {      //now only check existence of requires post 
             if ((!isset($this->post[$validation_key]) || empty($this->post[$validation_key]))) {
                 $errors[] = "Missing required field: $validation_key";
             }
