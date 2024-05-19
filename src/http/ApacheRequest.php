@@ -3,6 +3,7 @@
 namespace GemLibrary\Http;
 
 use GemLibrary\Http\Request;
+use stdClass;
 
 class ApacheRequest
 {
@@ -12,9 +13,7 @@ class ApacheRequest
     {
         $this->sanitizeAllServerHttpRequestHeaders();
         $this->sanitizeAllHTTPGetRequest();
-        $this->sanitizeAllHTTPPostRequest();
-        $put = $this->sanitizeAllHTTPPutRequest();
-        $patch = $this->sanitizeAllHTTPPatchRequest();
+
         $this->sanitizeQueryString();
         $this->request = new Request();
         $this->request->requestedUrl = $this->sanitizeRequestURI();
@@ -22,10 +21,12 @@ class ApacheRequest
         $this->request->userMachine = $this->getUserAgent();
         $this->request->remoteAddress = $this->getRemoteAddress();
         $this->request->queryString = $_SERVER['QUERY_STRING'];
-        $this->request->post = $_POST;
+        $this->request->post = $this->convertIncoming($_POST);
         $this->request->get = $_GET;
-        $this->request->put = $put;
-        $this->request->patch = $patch;
+        $this->request->put = $this->sanitizeAllHTTPPutRequest();
+        $this->request->patch = $this->sanitizeAllHTTPPatchRequest();
+        $_GET = null;
+        $_POST = null;
 
         if (isset($_FILES['file'])) {
             $this->request->files = $_FILES['file'];
@@ -47,24 +48,6 @@ class ApacheRequest
                     }
                 }
             }
-        }
-    }
-
-    private function sanitizeAllHTTPPostRequest():void
-    {   
-        foreach ($_POST as $key => $value) {
-            if(is_string($value)) {
-                $_POST[$key] = $this->sanitizeInput($value);
-            }
-            if(is_array($_POST[$key])) {
-                foreach($_POST[$key] as $subKey => $subValue)
-                {
-                    if(is_string($subValue)) {
-                        $_POST[$key][$subKey] = $this->sanitizeInput($value);
-                    }
-                }
-            }
-           
         }
     }
 
@@ -182,10 +165,11 @@ class ApacheRequest
      */
     private function sanitizeInput(mixed $input):mixed
     {
+        $input = trim($input);
         if(!is_string($input)) {
             return $input;
         }
-        return filter_var(trim($input), FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+        return filter_var($input, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     }
 
     private function getUserAgent():string
@@ -206,6 +190,40 @@ class ApacheRequest
             }
         }
         return 'remote_address is not set';
+    }
+
+    /**
+     * @param array<mixed> $incoming
+     */
+    private function convertIncoming(array $incoming):object
+    {
+        $object = new stdClass();
+
+        foreach ($incoming as $key => $value) {
+            if(!is_array($value)) {
+                $type = gettype($value);
+                if($type == 'string')
+                {
+                    $value = $this->sanitizeInput($value);
+                }
+                settype($object->$key , $type);
+                $object->$key = $value;
+            }
+            else{
+
+                $object->$key = [];
+                foreach($incoming[$key] as $subKey => $subValue)
+                {
+                    $type = gettype($subValue);
+                    if($type == 'string')
+                    {
+                        $value = $this->sanitizeInput($subValue);
+                    }
+                    $object->$key[$subKey] = $value;
+                }
+            }
+        }
+        return $object;
     }
 
     private function getRequestMethod():string

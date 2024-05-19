@@ -20,10 +20,8 @@ class Request
      * @var array<mixed>
      */
     public    array        $files;
-    /**
-     * @var array<mixed>
-     */
-    public    array        $post;
+
+    public    object        $post;
 
     /**
      * @var array<mixed>
@@ -111,7 +109,8 @@ class Request
             }
             $all[$validation_key] = $validationString;
         }
-        foreach($this->post as $postName => $postValue) { 
+        $properties = get_object_vars($this->post);
+        foreach($properties  as $postName => $postValue) { 
             if(!array_key_exists($postName, $all)  ) {  
                 $errors[$postName] = "unwanted post $postName";
                 $this->post = []; 
