@@ -113,18 +113,12 @@ class Request
         foreach($properties  as $postName => $postValue) { 
             if(!array_key_exists($postName, $all)  ) {  
                 $errors[$postName] = "unwanted post $postName";
-                $this->post = []; 
+                return false;
             }
-        }
-        if (count($errors) > 0) { //if unwanted post exists , stop process and return false
-            foreach ($errors as $error) {
-                $this->error .= $error . ', '; // Combine errors into a single string
-            }
-            return false;
         }
 
         foreach($requires as $validation_key => $validation_value) {      //now only check existence of requires post 
-            if ((!isset($this->post[$validation_key]) || empty($this->post[$validation_key]))) {
+            if ((!isset($this->post->$validation_key) || empty($this->post->$validation_key))) {
                 $errors[] = "Missing required field: $validation_key";
             }
         }
@@ -150,7 +144,7 @@ class Request
 
         foreach($optionals as $optionals_key => $optionals_value) { //check optionals if post exists and not null then do check
         
-            if (isset($this->post[$optionals_key]) && !empty($this->post[$optionals_key])) {
+            if (isset($this->post->$optionals_key) && !empty($this->post->$optionals_key)) {
                 $validationResult = $this->checkPostKeyValue($optionals_key, $optionals_value);
                 if (!$validationResult) {
                     $errors[] = "Invalid value for field: $optionals_key";
@@ -169,6 +163,7 @@ class Request
     public function setPostToObject(object $class): bool
     {
         try {
+            /**@phpstan-ignore-next-line */
             foreach ($this->post as $key => $value) {
                 if (property_exists($class, $key)) {
                     $class->$key = $value;
@@ -191,7 +186,7 @@ class Request
     {
         foreach ($stringPosts as $key => $value) {
             // Check if POST key exists
-            if (!isset($this->post[$key])) {
+            if (!isset($this->$key)) {
                 $this->error = "Missing POST key '$key'";
                 return false;
             }
@@ -218,8 +213,7 @@ class Request
             } else {
                 $max = (int)$max[1];
             }
-            /**@phpstan-ignore-next-line */
-            $stringLength = strlen($this->post[$key]);
+            $stringLength = strlen($this->$key);
             if (!($min <= $stringLength && $stringLength <= $max)) {
                 $this->error = "String length for post '$key' is ({$stringLength}) . it is outside the range ({$min}-{$max})";
                 return false;
@@ -235,7 +229,7 @@ class Request
 
         $jsonResponse = new JsonResponse();
         $caller = new ApiCall();
-        $caller->post = $this->post;
+        $caller->post = (array)$this->post;
         $caller->files = $this->files;
         $caller->authorizationHeader = $this->authorizationHeader;
 
@@ -264,13 +258,13 @@ class Request
 
         // Specific data type validation (using a dictionary for readability)
         $validationMap = [
-            'string' => is_string($this->post[$key]),
-            'int' => is_numeric($this->post[$key]),
-            'float' => is_float($this->post[$key]),
-            'bool' => is_bool($this->post[$key]),
-            'array' => is_array($this->post[$key]),
-            'json' => (JsonHelper::validateJson($this->post[$key]) ? true : false),
-            'email' => filter_var($this->post[$key], FILTER_VALIDATE_EMAIL) !== false, // Explicit false check for email
+            'string' => is_string($this->post->$key),
+            'int' => is_numeric($this->post->$key),
+            'float' => is_float($this->post->$key),
+            'bool' => is_bool($this->post->$key),
+            'array' => is_array($this->post->$key),
+            'json' => (JsonHelper::validateJson($this->post->$key) ? true : false),
+            'email' => filter_var($this->post->$key, FILTER_VALIDATE_EMAIL) !== false, // Explicit false check for email
         ];
 
         // Validate data type based on validationMap

@@ -21,7 +21,7 @@ class ApacheRequest
         $this->request->userMachine = $this->getUserAgent();
         $this->request->remoteAddress = $this->getRemoteAddress();
         $this->request->queryString = $_SERVER['QUERY_STRING'];
-        $this->request->post = $this->convertIncoming($_POST);
+        $this->request->post = new Post($_POST);
         $this->request->get = $_GET;
         $this->request->put = $this->sanitizeAllHTTPPutRequest();
         $this->request->patch = $this->sanitizeAllHTTPPatchRequest();
@@ -165,10 +165,10 @@ class ApacheRequest
      */
     private function sanitizeInput(mixed $input):mixed
     {
-        $input = trim($input);
         if(!is_string($input)) {
             return $input;
         }
+        $input = trim($input);
         return filter_var($input, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     }
 
@@ -190,40 +190,6 @@ class ApacheRequest
             }
         }
         return 'remote_address is not set';
-    }
-
-    /**
-     * @param array<mixed> $incoming
-     */
-    private function convertIncoming(array $incoming):object
-    {
-        $object = new stdClass();
-
-        foreach ($incoming as $key => $value) {
-            if(!is_array($value)) {
-                $type = gettype($value);
-                if($type == 'string')
-                {
-                    $value = $this->sanitizeInput($value);
-                }
-                settype($object->$key , $type);
-                $object->$key = $value;
-            }
-            else{
-
-                $object->$key = [];
-                foreach($incoming[$key] as $subKey => $subValue)
-                {
-                    $type = gettype($subValue);
-                    if($type == 'string')
-                    {
-                        $value = $this->sanitizeInput($subValue);
-                    }
-                    $object->$key[$subKey] = $value;
-                }
-            }
-        }
-        return $object;
     }
 
     private function getRequestMethod():string
